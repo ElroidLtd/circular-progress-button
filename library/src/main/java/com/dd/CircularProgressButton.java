@@ -328,16 +328,18 @@ public class CircularProgressButton extends Button {
         return animation;
     }
 
-    private void morphToProgress() {
+    private void morphToProgress(int fromProgress) {
         setWidth(getWidth());
         setText(mProgressText);
 
         MorphingAnimation animation = createProgressMorphing(mCornerRadius, getHeight(), getWidth(), getHeight());
 
-        animation.setFromColor(getNormalColor(mIdleColorState));
+		int currentColor = getNormalColor(mIdleColorState);
+		if(fromProgress == 100) currentColor = getNormalColor(mCompleteColorState);
+        animation.setFromColor(currentColor);
         animation.setToColor(mColorProgress);
 
-        animation.setFromStrokeColor(getNormalColor(mIdleColorState));
+        animation.setFromStrokeColor(currentColor);
         animation.setToStrokeColor(mColorIndicatorBackground);
 
         animation.setListener(mProgressStateListener);
@@ -538,6 +540,7 @@ public class CircularProgressButton extends Button {
     }
 
     public void setProgress(int progress) {
+		int fromProgress = mProgress;
         mProgress = progress;
 
         if (mMorphingInProgress || getWidth() == 0) {
@@ -553,11 +556,12 @@ public class CircularProgressButton extends Button {
                 morphIdleToComplete();
             }
         } else if (mProgress > IDLE_STATE_PROGRESS) {
-            if (mState == State.IDLE) {
-                morphToProgress();
-            } else if (mState == State.PROGRESS) {
+			if (mState == State.PROGRESS) {
                 invalidate();
             }
+			else{
+				morphToProgress(fromProgress);
+			}
         } else if (mProgress == ERROR_STATE_PROGRESS) {
             if (mState == State.PROGRESS) {
                 morphProgressToError();
@@ -683,4 +687,18 @@ public class CircularProgressButton extends Button {
             }
         };
     }
+
+	/*public void setIdleColorState(int idleStateSelector){
+		mIdleColorState = getResources().getColorStateList(idleStateSelector);
+		initIdleStateDrawable();
+	}
+
+	public void setCompleteColorState(int idleStateSelector){
+		this.mCompleteColorState = getResources().getColorStateList(idleStateSelector);
+		initCompleteStateDrawable();
+	}
+
+	public void setColorIndicator(int colorValue){
+		this.mColorIndicator = colorValue;
+	}*/
 }
