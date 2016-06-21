@@ -539,9 +539,14 @@ public class CircularProgressButton extends Button {
         }
     }
 
-    public void setProgress(int progress) {
+	public void setProgress(int progress) {
+		setProgress(progress, true);
+	}
+    public void setProgress(int progress, boolean animate) {
 		int fromProgress = mProgress;
         mProgress = progress;
+
+		if(!animate) mConfigurationChanged = true;
 
         if (mMorphingInProgress || getWidth() == 0) {
             return;
