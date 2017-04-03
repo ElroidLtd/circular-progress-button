@@ -388,6 +388,20 @@ public class CircularProgressButton extends Button {
 
     }
 
+	private void morphErrorToComplete() {
+		MorphingAnimation animation = createMorphing();
+
+		animation.setFromColor(getNormalColor(mErrorColorState));
+		animation.setToColor(getNormalColor(mCompleteColorState));
+
+		animation.setFromStrokeColor(getNormalColor(mErrorColorState));
+		animation.setToStrokeColor(getNormalColor(mCompleteColorState));
+		animation.setListener(mCompleteStateListener);
+
+		animation.start();
+
+	}
+
     private OnAnimationEndListener mCompleteStateListener = new OnAnimationEndListener() {
         @Override
         public void onAnimationEnd() {
@@ -527,9 +541,9 @@ public class CircularProgressButton extends Button {
         }
     }
 
-	public void setProgress(int progress) {
+	/*public void setProgress(int progress) {
 		setProgress(progress, true);
-	}
+	}*/
     public void  setProgress(int progress, boolean animate) {
 		int fromProgress = mProgress;
         mProgress = progress;
@@ -542,18 +556,14 @@ public class CircularProgressButton extends Button {
 
         mStateManager.saveProgress(this);
 
-        if (mProgress >= mMaxProgress) {
+        if (mProgress == SUCCESS_STATE_PROGRESS || mProgress >= mMaxProgress) {
             if (mState == State.PROGRESS) {
                 morphProgressToComplete();
             } else if (mState == State.IDLE) {
                 morphIdleToComplete();
             }
-        } else if (mProgress > IDLE_STATE_PROGRESS) {
-			if (mState == State.PROGRESS) {
-                invalidate();
-            }
-			else{
-				morphToProgress(fromProgress);
+			else if (mState == State.ERROR) {
+				morphErrorToComplete();
 			}
         } else if (mProgress == ERROR_STATE_PROGRESS) {
             if (mState == State.PROGRESS) {
@@ -569,6 +579,13 @@ public class CircularProgressButton extends Button {
             } else if (mState == State.ERROR) {
                 morphErrorToIdle();
             }
+		} else if (mProgress > IDLE_STATE_PROGRESS) {
+			if (mState == State.PROGRESS) {
+				invalidate();
+			}
+			else{
+				morphToProgress(fromProgress);
+			}
         }
     }
 
@@ -612,7 +629,7 @@ public class CircularProgressButton extends Button {
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
         if (changed) {
-            setProgress(mProgress);
+            setProgress(mProgress, true);
         }
     }
 
@@ -635,7 +652,7 @@ public class CircularProgressButton extends Button {
             mIndeterminateProgressMode = savedState.mIndeterminateProgressMode;
             mConfigurationChanged = savedState.mConfigurationChanged;
             super.onRestoreInstanceState(savedState.getSuperState());
-            setProgress(mProgress);
+            setProgress(mProgress, false);
         } else {
             super.onRestoreInstanceState(state);
         }

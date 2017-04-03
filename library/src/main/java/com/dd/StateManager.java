@@ -24,7 +24,7 @@ class StateManager {
 
     public void checkState(CircularProgressButton progressButton) {
         if (progressButton.getProgress() != getProgress()) {
-            progressButton.setProgress(progressButton.getProgress());
+            progressButton.setProgress(progressButton.getProgress(), true);
         } else if(progressButton.isEnabled() != isEnabled()) {
             progressButton.setEnabled(progressButton.isEnabled());
         }
