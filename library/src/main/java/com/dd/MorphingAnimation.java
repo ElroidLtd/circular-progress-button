@@ -8,6 +8,8 @@ import android.animation.ValueAnimator;
 import android.graphics.drawable.GradientDrawable;
 import android.widget.TextView;
 
+import timber.log.Timber;
+
 class MorphingAnimation {
 
     public static final int DURATION_NORMAL = 400;
@@ -43,7 +45,7 @@ class MorphingAnimation {
         mDuration = duration;
     }
 
-    public void setListener(OnAnimationEndListener listener) {
+	public void setListener(OnAnimationEndListener listener) {
         mListener = listener;
     }
 
@@ -84,67 +86,84 @@ class MorphingAnimation {
     }
 
     public void start() {
-        ValueAnimator widthAnimation = ValueAnimator.ofInt(mFromWidth, mToWidth);
-        final GradientDrawable gradientDrawable = mDrawable.getGradientDrawable();
-        widthAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                Integer value = (Integer) animation.getAnimatedValue();
-                int leftOffset;
-                int rightOffset;
-                int padding;
+		if(mDuration == DURATION_INSTANT){
+			//do it instantly!
+			GradientDrawable gradientDrawable = mDrawable.getGradientDrawable();
+			//probably not needed: gradientDrawable.setBounds();
+			gradientDrawable.setColor(mToColor);
+			mDrawable.setStrokeColor(mToStrokeColor);
+			gradientDrawable.setCornerRadius(mToCornerRadius);
 
-                if (mFromWidth > mToWidth) {
-                    leftOffset = (mFromWidth - value) / 2;
-                    rightOffset = mFromWidth - leftOffset;
-                    padding = (int) (mPadding * animation.getAnimatedFraction());
-                } else {
-                    leftOffset = (mToWidth - value) / 2;
-                    rightOffset = mToWidth - leftOffset;
-                    padding = (int) (mPadding - mPadding * animation.getAnimatedFraction());
-                }
+			if(mListener != null){
+				mListener.onAnimationEnd();
+			}
+		}
+		else {
+			ValueAnimator widthAnimation = ValueAnimator.ofInt(mFromWidth, mToWidth);
+			final GradientDrawable gradientDrawable = mDrawable.getGradientDrawable();
+			widthAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener()
+			{
+				@Override
+				public void onAnimationUpdate(ValueAnimator animation){
+					Integer value = (Integer) animation.getAnimatedValue();
+					int leftOffset;
+					int rightOffset;
+					int padding;
 
-                gradientDrawable
-                        .setBounds(leftOffset + padding, padding, rightOffset - padding, mView.getHeight() - padding);
-            }
-        });
+					if(mFromWidth > mToWidth){
+						leftOffset = (mFromWidth - value) / 2;
+						rightOffset = mFromWidth - leftOffset;
+						padding = (int) (mPadding * animation.getAnimatedFraction());
+					}
+					else {
+						leftOffset = (mToWidth - value) / 2;
+						rightOffset = mToWidth - leftOffset;
+						padding = (int) (mPadding - mPadding * animation.getAnimatedFraction());
+					}
 
-        ObjectAnimator bgColorAnimation = ObjectAnimator.ofInt(gradientDrawable, "color", mFromColor, mToColor);
-        bgColorAnimation.setEvaluator(new ArgbEvaluator());
+					gradientDrawable
+							.setBounds(leftOffset + padding, padding, rightOffset - padding, mView.getHeight() - padding);
+				}
+			});
 
-        ObjectAnimator strokeColorAnimation =
-                ObjectAnimator.ofInt(mDrawable, "strokeColor", mFromStrokeColor, mToStrokeColor);
-        strokeColorAnimation.setEvaluator(new ArgbEvaluator());
+			ObjectAnimator bgColorAnimation = ObjectAnimator.ofInt(gradientDrawable, "color", mFromColor, mToColor);
+			bgColorAnimation.setEvaluator(new ArgbEvaluator());
 
-        ObjectAnimator cornerAnimation =
-                ObjectAnimator.ofFloat(gradientDrawable, "cornerRadius", mFromCornerRadius, mToCornerRadius);
+			ObjectAnimator strokeColorAnimation =
+					ObjectAnimator.ofInt(mDrawable, "strokeColor", mFromStrokeColor, mToStrokeColor);
+			strokeColorAnimation.setEvaluator(new ArgbEvaluator());
 
-        AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet.setDuration(mDuration);
-        animatorSet.playTogether(widthAnimation, bgColorAnimation, strokeColorAnimation, cornerAnimation);
-        animatorSet.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
+			ObjectAnimator cornerAnimation =
+					ObjectAnimator.ofFloat(gradientDrawable, "cornerRadius", mFromCornerRadius, mToCornerRadius);
 
-            }
+			AnimatorSet animatorSet = new AnimatorSet();
+			animatorSet.setDuration(mDuration);
+			animatorSet.playTogether(widthAnimation, bgColorAnimation, strokeColorAnimation, cornerAnimation);
+			animatorSet.addListener(new Animator.AnimatorListener()
+			{
+				@Override
+				public void onAnimationStart(Animator animation){
 
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                if (mListener != null) {
-                    mListener.onAnimationEnd();
-                }
-            }
+				}
 
-            @Override
-            public void onAnimationCancel(Animator animation) {
+				@Override
+				public void onAnimationEnd(Animator animation){
+					if(mListener != null){
+						mListener.onAnimationEnd();
+					}
+				}
 
-            }
+				@Override
+				public void onAnimationCancel(Animator animation){
 
-            @Override
-            public void onAnimationRepeat(Animator animation) {
+				}
 
-            }
-        });
-        animatorSet.start();
+				@Override
+				public void onAnimationRepeat(Animator animation){
+
+				}
+			});
+			animatorSet.start();
+		}
     }
 }

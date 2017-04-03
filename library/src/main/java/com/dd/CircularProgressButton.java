@@ -17,6 +17,8 @@ import android.util.AttributeSet;
 import android.util.StateSet;
 import android.widget.Button;
 
+import timber.log.Timber;
+
 public class CircularProgressButton extends Button {
 
     public static final int IDLE_STATE_PROGRESS = 0;
@@ -365,10 +367,10 @@ public class CircularProgressButton extends Button {
 
         animation.setFromStrokeColor(mColorIndicator);
         animation.setToStrokeColor(getNormalColor(mCompleteColorState));
-
-        animation.setListener(mCompleteStateListener);
+		animation.setListener(mCompleteStateListener);
 
         animation.start();
+
 
     }
 
@@ -380,8 +382,7 @@ public class CircularProgressButton extends Button {
 
         animation.setFromStrokeColor(getNormalColor(mIdleColorState));
         animation.setToStrokeColor(getNormalColor(mCompleteColorState));
-
-        animation.setListener(mCompleteStateListener);
+		animation.setListener(mCompleteStateListener);
 
         animation.start();
 
@@ -411,8 +412,7 @@ public class CircularProgressButton extends Button {
 
         animation.setFromStrokeColor(getNormalColor(mCompleteColorState));
         animation.setToStrokeColor(getNormalColor(mIdleColorState));
-
-        animation.setListener(mIdleStateListener);
+		animation.setListener(mIdleStateListener);
 
         animation.start();
 
@@ -426,8 +426,7 @@ public class CircularProgressButton extends Button {
 
         animation.setFromStrokeColor(getNormalColor(mErrorColorState));
         animation.setToStrokeColor(getNormalColor(mIdleColorState));
-
-        animation.setListener(mIdleStateListener);
+		animation.setListener(mIdleStateListener);
 
         animation.start();
 
@@ -453,8 +452,7 @@ public class CircularProgressButton extends Button {
 
         animation.setFromStrokeColor(getNormalColor(mIdleColorState));
         animation.setToStrokeColor(getNormalColor(mErrorColorState));
-
-        animation.setListener(mErrorStateListener);
+		animation.setListener(mErrorStateListener);
 
         animation.start();
 
@@ -468,7 +466,7 @@ public class CircularProgressButton extends Button {
 
         animation.setFromStrokeColor(mColorIndicator);
         animation.setToStrokeColor(getNormalColor(mErrorColorState));
-        animation.setListener(mErrorStateListener);
+		animation.setListener(mErrorStateListener);
 
         animation.start();
     }
@@ -497,17 +495,7 @@ public class CircularProgressButton extends Button {
 
         animation.setFromStrokeColor(mColorIndicator);
         animation.setToStrokeColor(getNormalColor(mIdleColorState));
-        animation.setListener(new OnAnimationEndListener() {
-            @Override
-            public void onAnimationEnd() {
-                removeIcon();
-                setText(mIdleText);
-                mMorphingInProgress = false;
-                mState = State.IDLE;
-
-                mStateManager.checkState(CircularProgressButton.this);
-            }
-        });
+		animation.setListener(mIdleStateListener);
 
         animation.start();
     }
@@ -542,12 +530,11 @@ public class CircularProgressButton extends Button {
 	public void setProgress(int progress) {
 		setProgress(progress, true);
 	}
-    public void setProgress(int progress, boolean animate) {
+    public void  setProgress(int progress, boolean animate) {
 		int fromProgress = mProgress;
         mProgress = progress;
 
-		//don't understand the point of this. It's ruining the first animation (after un-animated init)
-		//if(!animate) mConfigurationChanged = true;
+		mConfigurationChanged = !animate;
 
         if (mMorphingInProgress || getWidth() == 0) {
             return;
@@ -693,18 +680,4 @@ public class CircularProgressButton extends Button {
             }
         };
     }
-
-	/*public void setIdleColorState(int idleStateSelector){
-		mIdleColorState = getResources().getColorStateList(idleStateSelector);
-		initIdleStateDrawable();
-	}
-
-	public void setCompleteColorState(int idleStateSelector){
-		this.mCompleteColorState = getResources().getColorStateList(idleStateSelector);
-		initCompleteStateDrawable();
-	}
-
-	public void setColorIndicator(int colorValue){
-		this.mColorIndicator = colorValue;
-	}*/
 }
