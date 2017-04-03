@@ -546,7 +546,8 @@ public class CircularProgressButton extends Button {
 		int fromProgress = mProgress;
         mProgress = progress;
 
-		if(!animate) mConfigurationChanged = true;
+		//don't understand the point of this. It's ruining the first animation (after un-animated init)
+		//if(!animate) mConfigurationChanged = true;
 
         if (mMorphingInProgress || getWidth() == 0) {
             return;
